@@ -56,6 +56,8 @@ header{
   text-decoration:none;
   font-weight:bold;
   font-size:18px;
+  position:relative;
+  z-index:1;
 }
 
 .card small{
@@ -69,6 +71,7 @@ header{
   right:12px;
   top:12px;
   cursor:pointer;
+  z-index:10;
 }
 
 .fab{
@@ -229,7 +232,7 @@ function render(){
         <a href="https://t.me/${d.username.replace('@','')}" target="_blank">${d.username}</a>
         <small>${d.amount||""} ${d.note||""}</small>
         <small>${new Date(d.date).toLocaleDateString("id-ID")} • ${day} hari</small>
-        <span class="edit" onclick="edit('${d.id}')">✏️</span>
+        <span class="edit" onclick="event.stopPropagation(); edit('${d.id}')">✏️</span>
       </div>
     `;
   });
