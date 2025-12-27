@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pengingat Bayar</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#fff;
+}
+
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:16px;
+  color:#7b3fe4;
+  font-size:20px;
+  font-weight:bold;
+}
+
+.header-right{
+  display:flex;
+  gap:12px;
+}
+
+.icon-btn{
+  cursor:pointer;
+  font-size:22px;
+}
+
+.search{
+  margin:0 16px 10px;
+  padding:10px;
+  width:calc(100% - 32px);
+  border-radius:20px;
+  border:1px solid #ddd;
+}
+
+.container{padding:16px}
+
+.card{
+  border-radius:10px;
+  padding:14px;
+  margin-bottom:12px;
+  color:#fff;
+  position:relative;
+}
+
+.card a{
+  color:#fff;
+  text-decoration:none;
+  font-weight:bold;
+  font-size:18px;
+}
+
+.card small{
+  display:block;
+  margin-top:6px;
+  font-size:14px;
+}
+
+.edit{
+  position:absolute;
+  right:12px;
+  top:12px;
+  cursor:pointer;
+}
+
+.fab{
+  position:fixed;
+  right:20px;
+  bottom:20px;
+  width:56px;
+  height:56px;
+  border-radius:50%;
+  background:#7b3fe4;
+  color:#fff;
+  border:none;
+  font-size:32px;
+  cursor:pointer;
+}
+
+.modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.4);
+  justify-content:center;
+  align-items:center;
+}
+
+.modal-box{
+  background:#fff;
+  width:90%;
+  max-width:400px;
+  padding:16px;
+  border-radius:10px;
+}
+
+.modal-box h3{margin-top:0}
+
+.modal-box input,
+.modal-box textarea,
+.modal-box select{
+  width:100%;
+  margin-bottom:10px;
+  padding:8px;
+}
+
+.modal-box button{
+  width:100%;
+  padding:10px;
+  border:none;
+  background:#7b3fe4;
+  color:#fff;
+  cursor:pointer;
+  margin-bottom:6px;
+}
+
+.danger{background:#e74c3c}
+
+.menu{
+  display:none;
+  position:fixed;
+  top:70px;
+  right:16px;
+  background:#fff;
+  border:1px solid #ddd;
+  border-radius:8px;
+  overflow:hidden;
+}
+
+.menu button{
+  display:block;
+  width:100%;
+  padding:10px;
+  border:none;
+  background:#fff;
+  text-align:left;
+  cursor:pointer;
+}
+
+.menu button:hover{background:#f2f2f2}
+</style>
+</head>
+
+<body>
+
+<header>
+  Catatan tambahan
+  <div class="header-right">
+    <span class="icon-btn" onclick="toggleMenu()">☰</span>
+  </div>
+</header>
+
+<input class="search" placeholder="Cari username..." oninput="search(this.value)">
+
+<div class="container" id="list"></div>
+
+<button class="fab" onclick="openAdd()">+</button>
+
+<!-- MENU FILTER -->
+<div class="menu" id="menu">
+  <button onclick="setSort('new')">Terbaru</button>
+  <button onclick="setSort('old')">Terlama</button>
+  <button onclick="setColor('green')">Hijau (0–2)</button>
+  <button onclick="setColor('lblue')">Biru Muda (3–6)</button>
+  <button onclick="setColor('dblue')">Biru Tua (7–15)</button>
+  <button onclick="setColor('purple')">Ungu (16–30)</button>
+  <button onclick="setColor('red')">Merah (31+)</button>
+  <button onclick="setColor('all')">Semua</button>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <h3 id="modalTitle">Tambah</h3>
+    <input id="username" placeholder="Username Telegram (tanpa @)">
+    <input id="amount" placeholder="Nominal">
+    <textarea id="note" placeholder="Catatan"></textarea>
+    <button onclick="save()">✔ Simpan</button>
+    <button class="danger" id="deleteBtn" onclick="remove()" style="display:none">🗑 Hapus</button>
+  </div>
+</div>
+
+<script>
+let data = JSON.parse(localStorage.getItem("bayar")) || [];
+let editIndex = null;
+let sortMode = "new";
+let colorFilter = "all";
+let keyword = "";
+
+function daysDiff(date){
+  const now = new Date();
+  const d = new Date(date);
+  return Math.floor((now - d) / (1000*60*60*24));
+}
+
+function getColor(day){
+  if(day<=2) return {bg:"#7adf9a",key:"green"};
+  if(day<=6) return {bg:"#6fd3c3",key:"lblue"};
+  if(day<=15) return {bg:"#7db0dd",key:"dblue"};
+  if(day<=30) return {bg:"#b88be2",key:"purple"};
+  return {bg:"#e18b8b",key:"red"};
+}
+
+function render(){
+  let list = [...data];
+
+  if(keyword)
+    list = list.filter(d=>d.username.includes(keyword));
+
+  if(colorFilter!=="all")
+    list = list.filter(d=>getColor(daysDiff(d.date)).key===colorFilter);
+
+  list.sort((a,b)=>sortMode==="new"
+    ? new Date(b.date)-new Date(a.date)
+    : new Date(a.date)-new Date(b.date)
+  );
+
+  const el = document.getElementById("list");
+  el.innerHTML="";
+
+  list.forEach((d)=>{
+    const day = daysDiff(d.date);
+    const color = getColor(day);
+    el.innerHTML+=`
+      <div class="card" style="background:${color.bg}">
+        <a href="https://t.me/${d.username}" target="_blank">@${d.username}</a>
+        <small>${d.amount||""} ${d.note||""}</small>
+        <small>${new Date(d.date).toLocaleDateString("id-ID")} • ${day} hari</small>
+        <span class="edit" onclick="edit('${d.id}')">✏️</span>
+      </div>
+    `;
+  });
+
+  localStorage.setItem("bayar", JSON.stringify(data));
+}
+
+function openAdd(){
+  editIndex=null;
+  modalTitle.innerText="Tambah";
+  deleteBtn.style.display="none";
+  username.value="";
+  amount.value="";
+  note.value="";
+  modal.style.display="flex";
+}
+
+function edit(id){
+  editIndex = data.findIndex(d=>d.id===id);
+  const d = data[editIndex];
+  modalTitle.innerText="Edit";
+  deleteBtn.style.display="block";
+  username.value=d.username;
+  amount.value=d.amount;
+  note.value=d.note;
+  modal.style.display="flex";
+}
+
+function save(){
+  if(!username.value.trim()) return alert("Username wajib diisi");
+
+  const obj={
+    id: editIndex===null ? Date.now() : data[editIndex].id,
+    username: username.value.trim(),
+    amount: amount.value.trim(),
+    note: note.value.trim(),
+    date: editIndex===null ? new Date() : data[editIndex].date
+  };
+
+  if(editIndex===null) data.unshift(obj);
+  else data[editIndex]=obj;
+
+  modal.style.display="none";
+  render();
+}
+
+function remove(){
+  if(confirm("Yakin hapus catatan ini?")){
+    data.splice(editIndex,1);
+    modal.style.display="none";
+    render();
+  }
+}
+
+function toggleMenu(){
+  menu.style.display = menu.style.display==="block"?"none":"block";
+}
+
+function setSort(v){sortMode=v;menu.style.display="none";render()}
+function setColor(v){colorFilter=v;menu.style.display="none";render()}
+function search(v){keyword=v.toLowerCase();render()}
+
+render();
+</script>
+
+</body>
+</html>
