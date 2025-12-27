@@ -164,7 +164,6 @@ header{
 
 <button class="fab" onclick="openAdd()">+</button>
 
-<!-- MENU FILTER -->
 <div class="menu" id="menu">
   <button onclick="setSort('new')">Terbaru</button>
   <button onclick="setSort('old')">Terlama</button>
@@ -176,11 +175,10 @@ header{
   <button onclick="setColor('all')">Semua</button>
 </div>
 
-<!-- MODAL -->
 <div class="modal" id="modal">
   <div class="modal-box">
     <h3 id="modalTitle">Tambah</h3>
-    <input id="username" placeholder="Username Telegram (tanpa @)">
+    <input id="username" placeholder="@username telegram">
     <input id="amount" placeholder="Nominal">
     <textarea id="note" placeholder="Catatan"></textarea>
     <button onclick="save()">✔ Simpan</button>
@@ -196,9 +194,7 @@ let colorFilter = "all";
 let keyword = "";
 
 function daysDiff(date){
-  const now = new Date();
-  const d = new Date(date);
-  return Math.floor((now - d) / (1000*60*60*24));
+  return Math.floor((new Date() - new Date(date)) / (1000*60*60*24));
 }
 
 function getColor(day){
@@ -213,10 +209,10 @@ function render(){
   let list = [...data];
 
   if(keyword)
-    list = list.filter(d=>d.username.includes(keyword));
+    list = list.filter(d => d.username.toLowerCase().includes(keyword));
 
   if(colorFilter!=="all")
-    list = list.filter(d=>getColor(daysDiff(d.date)).key===colorFilter);
+    list = list.filter(d => getColor(daysDiff(d.date)).key === colorFilter);
 
   list.sort((a,b)=>sortMode==="new"
     ? new Date(b.date)-new Date(a.date)
@@ -226,12 +222,12 @@ function render(){
   const el = document.getElementById("list");
   el.innerHTML="";
 
-  list.forEach((d)=>{
+  list.forEach(d=>{
     const day = daysDiff(d.date);
     const color = getColor(day);
     el.innerHTML+=`
       <div class="card" style="background:${color.bg}">
-        <a href="https://t.me/${d.username}" target="_blank">@${d.username}</a>
+        <a href="https://t.me/${d.username.replace('@','')}" target="_blank">${d.username}</a>
         <small>${d.amount||""} ${d.note||""}</small>
         <small>${new Date(d.date).toLocaleDateString("id-ID")} • ${day} hari</small>
         <span class="edit" onclick="edit('${d.id}')">✏️</span>
@@ -264,7 +260,8 @@ function edit(id){
 }
 
 function save(){
-  if(!username.value.trim()) return alert("Username wajib diisi");
+  if(!username.value.trim().startsWith("@"))
+    return alert("Username harus diawali @");
 
   const obj={
     id: editIndex===null ? Date.now() : data[editIndex].id,
