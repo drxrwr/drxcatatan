@@ -194,6 +194,7 @@ let editIndex = null;
 let sortMode = "new";
 let colorFilter = "all";
 let keyword = "";
+let tapTimer = null; // ⬅️ TAMBAHAN
 
 function daysDiff(date){
   return Math.floor((new Date() - new Date(date)) / (1000*60*60*24));
@@ -205,6 +206,17 @@ function getColor(day){
   if(day<=15) return {bg:"#7db0dd",key:"dblue"};
   if(day<=30) return {bg:"#b88be2",key:"purple"};
   return {bg:"#e18b8b",key:"red"};
+}
+
+// ⬅️ TAMBAHAN: DOUBLE TAP HANDLER
+function cardTap(id){
+  if(tapTimer){
+    clearTimeout(tapTimer);
+    tapTimer = null;
+    edit(id);
+  }else{
+    tapTimer = setTimeout(()=>{ tapTimer=null; },300);
+  }
 }
 
 function render(){
@@ -228,7 +240,10 @@ function render(){
     const day = daysDiff(d.date);
     const color = getColor(day);
     el.innerHTML+=`
-      <div class="card" style="background:${color.bg}">
+      <div class="card"
+           style="background:${color.bg}"
+           ontouchend="cardTap('${d.id}')"
+           ondblclick="edit('${d.id}')">
         <a href="https://t.me/${d.username.replace('@','')}" target="_blank">${d.username}</a>
         <small>${d.amount||""} ${d.note||""}</small>
         <small>${new Date(d.date).toLocaleDateString("id-ID")} • ${day} hari</small>
