@@ -30,24 +30,46 @@ header{
 
 .card{
   border-radius:10px;
-  padding:14px;
   margin-bottom:12px;
   color:#fff;
-  position:relative;
-  touch-action:pan-y; /* penting biar swipe lancar */
+  overflow:hidden;
 }
 
-.card a{
+.card-inner{
+  display:flex;
+  align-items:stretch;
+}
+
+.card-content{
+  flex:1;
+  padding:14px;
+}
+
+.card-content a{
   color:#fff;
   text-decoration:none;
   font-weight:bold;
   font-size:18px;
 }
 
-.card small{
+.card-content small{
   display:block;
   margin-top:6px;
   font-size:14px;
+}
+
+.card-edit{
+  width:80px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:bold;
+  cursor:pointer;
+  background:rgba(0,0,0,0.25);
+}
+
+.card-edit:active{
+  background:rgba(0,0,0,0.4);
 }
 
 .fab{
