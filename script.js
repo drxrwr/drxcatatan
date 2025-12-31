@@ -38,33 +38,22 @@ function render(){
     const color=getColor(day);
 
     el.innerHTML+=`
-      <div class="card" data-id="${d.id}" style="background:${color.bg}">
-        <a href="https://t.me/${d.username.replace('@','')}" target="_blank">${d.username}</a>
-        <small>${d.amount||""} ${d.note||""}</small>
-        <small>${new Date(d.date).toLocaleDateString("id-ID")} • ${day} hari</small>
+      <div class="card" style="background:${color.bg}">
+        <div class="card-inner">
+          <div class="card-content">
+            <a href="https://t.me/${d.username.replace('@','')}" target="_blank">${d.username}</a>
+            <small>${d.amount||""} ${d.note||""}</small>
+            <small>${new Date(d.date).toLocaleDateString("id-ID")} • ${day} hari</small>
+          </div>
+          <div class="card-edit" onclick="edit('${d.id}')">
+            EDIT
+          </div>
+        </div>
       </div>
     `;
   });
 
-  attachSwipe();
   localStorage.setItem("bayar", JSON.stringify(data));
-}
-
-function attachSwipe(){
-  document.querySelectorAll('.card').forEach(card=>{
-    let startX=0;
-
-    card.addEventListener('touchstart',e=>{
-      startX=e.touches[0].clientX;
-    });
-
-    card.addEventListener('touchend',e=>{
-      const endX=e.changedTouches[0].clientX;
-      if(startX - endX > 80){ // swipe kiri
-        edit(card.dataset.id);
-      }
-    });
-  });
 }
 
 function openAdd(){
@@ -78,7 +67,7 @@ function openAdd(){
 }
 
 function edit(id){
-  editIndex=data.findIndex(d=>d.id===id);
+  editIndex=data.findIndex(d=>d.id==id);
   const d=data[editIndex];
 
   modalTitle.innerText="Edit";
