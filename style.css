@@ -49,14 +49,6 @@ header{
   font-size:14px;
 }
 
-.edit{
-  position:absolute;
-  right:12px;
-  top:12px;
-  cursor:pointer;
-  z-index:10;
-}
-
 .fab{
   position:fixed;
   right:20px;
