@@ -20,101 +20,104 @@ function getColor(day){
 function cardTap(id){
   if(tapTimer){
     clearTimeout(tapTimer);
-    tapTimer=null;
+    tapTimer = null;
     edit(id);
   }else{
-    tapTimer=setTimeout(()=>tapTimer=null,300);
+    tapTimer = setTimeout(()=>tapTimer=null,300);
   }
 }
 
 function render(){
-  let list=[...data];
+  let list = [...data];
 
-  if(keyword) list=list.filter(d=>d.username.toLowerCase().includes(keyword));
+  if(keyword)
+    list = list.filter(d=>d.username.toLowerCase().includes(keyword));
+
   if(colorFilter!=="all")
-    list=list.filter(d=>getColor(daysDiff(d.date)).key===colorFilter);
+    list = list.filter(d=>getColor(daysDiff(d.date)).key===colorFilter);
 
   list.sort((a,b)=>sortMode==="new"
     ? new Date(b.date)-new Date(a.date)
     : new Date(a.date)-new Date(b.date)
   );
 
-  const el=document.getElementById("list");
-  el.innerHTML="";
+  const el = document.getElementById("list");
+  el.innerHTML = "";
 
   list.forEach(d=>{
-    const day=daysDiff(d.date);
-    const color=getColor(day);
-    el.innerHTML+=`
-      <div class="card" style="background:${color.bg}"
-        ontouchend="cardTap('${d.id}')" ondblclick="edit('${d.id}')">
+    const day = daysDiff(d.date);
+    const color = getColor(day);
+
+    el.innerHTML += `
+      <div class="card"
+        style="background:${color.bg}"
+        ontouchend="cardTap('${d.id}')"
+        ondblclick="edit('${d.id}')">
         <a href="https://t.me/${d.username.replace('@','')}" target="_blank">${d.username}</a>
         <small>${d.amount||""} ${d.note||""}</small>
         <small>${new Date(d.date).toLocaleDateString("id-ID")} • ${day} hari</small>
-        <span class="edit" data-id="${d.id}">✏️</span>
       </div>
     `;
-  });
-
-  document.querySelectorAll('.edit').forEach(e=>{
-    const id=e.dataset.id;
-    e.onclick=(x)=>{x.stopPropagation();edit(id)};
-    e.ontouchend=(x)=>{x.stopPropagation();edit(id)};
   });
 
   localStorage.setItem("bayar", JSON.stringify(data));
 }
 
 function openAdd(){
-  editIndex=null;
-  modalTitle.innerText="Tambah";
-  deleteBtn.style.display="none";
-  username.value="";
-  amount.value="";
-  note.value="";
-  modal.style.display="flex";
+  editIndex = null;
+  modalTitle.innerText = "Tambah";
+  deleteBtn.style.display = "none";
+
+  username.value = "";
+  amount.value = "";
+  note.value = "";
+
+  modal.style.display = "flex";
 }
 
 function edit(id){
-  editIndex=data.findIndex(d=>d.id===id);
-  const d=data[editIndex];
-  modalTitle.innerText="Edit";
-  deleteBtn.style.display="block";
-  username.value=d.username;
-  amount.value=d.amount;
-  note.value=d.note;
-  modal.style.display="flex";
+  editIndex = data.findIndex(d=>d.id===id);
+  const d = data[editIndex];
+
+  modalTitle.innerText = "Edit";
+  deleteBtn.style.display = "block";
+
+  username.value = d.username;
+  amount.value = d.amount;
+  note.value = d.note;
+
+  modal.style.display = "flex";
 }
 
 function save(){
   if(!username.value.trim().startsWith("@"))
     return alert("Username harus diawali @");
 
-  const obj={
-    id: editIndex===null?Date.now():data[editIndex].id,
+  const obj = {
+    id: editIndex===null ? Date.now() : data[editIndex].id,
     username: username.value.trim(),
     amount: amount.value.trim(),
     note: note.value.trim(),
-    date: editIndex===null?new Date():data[editIndex].date
+    date: editIndex===null ? new Date() : data[editIndex].date
   };
 
   if(editIndex===null) data.unshift(obj);
-  else data[editIndex]=obj;
+  else data[editIndex] = obj;
 
-  modal.style.display="none";
+  modal.style.display = "none";
   render();
 }
 
 function remove(){
   if(confirm("Yakin hapus catatan ini?")){
     data.splice(editIndex,1);
-    modal.style.display="none";
+    modal.style.display = "none";
     render();
   }
 }
 
 function toggleMenu(){
-  menu.style.display=menu.style.display==="block"?"none":"block";
+  menu.style.display = menu.style.display==="block"?"none":"block";
 }
 
 function setSort(v){sortMode=v;menu.style.display="none";render()}
