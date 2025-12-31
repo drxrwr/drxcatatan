@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -247,9 +248,20 @@ function render(){
         <a href="https://t.me/${d.username.replace('@','')}" target="_blank">${d.username}</a>
         <small>${d.amount||""} ${d.note||""}</small>
         <small>${new Date(d.date).toLocaleDateString("id-ID")} • ${day} hari</small>
-        <span class="edit" onclick="event.stopPropagation(); edit('${d.id}')">✏️</span>
+        <span class="edit" data-id="${d.id}" role="button" tabindex="0">✏️</span>
       </div>
     `;
+  });
+
+  // Pasang event listener pada setiap ikon edit setelah elemen dibuat.
+  // Ini memastikan stopPropagation() bekerja sebelum handler kartu (cardTap/edit)
+  // dan membuat ikon bisa diklik pada mouse maupun perangkat sentuh.
+  el.querySelectorAll('.edit').forEach(span=>{
+    const id = span.dataset.id;
+    span.addEventListener('click', function(e){ e.stopPropagation(); edit(id); });
+    span.addEventListener('touchend', function(e){ e.stopPropagation(); edit(id); });
+    // keyboard accessibility: Enter or Space
+    span.addEventListener('keydown', function(e){ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); e.stopPropagation(); edit(id); } });
   });
 
   localStorage.setItem("bayar", JSON.stringify(data));
