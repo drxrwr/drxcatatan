@@ -17,7 +17,6 @@
 
 <input class="search" placeholder="Cari username..." oninput="search(this.value)">
 
-<!-- AREA LIST (bisa digeser ke kiri) -->
 <div class="container" id="list"></div>
 
 <button class="fab" onclick="openAdd()">+</button>
@@ -31,12 +30,6 @@
   <button onclick="setColor('purple')">Ungu (16–30)</button>
   <button onclick="setColor('red')">Merah (31+)</button>
   <button onclick="setColor('all')">Semua</button>
-</div>
-
-<!-- POPUP GESER KIRI -->
-<div class="swipe-popup" id="swipePopup">
-  <button onclick="openEdit()">✏️ Edit</button>
-  <button class="danger" onclick="remove()">🗑 Hapus</button>
 </div>
 
 <div class="modal" id="modal">
